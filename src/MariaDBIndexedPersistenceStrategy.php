@@ -8,8 +8,6 @@
  * file that was distributed with this source code.
  */
 
-declare(strict_types=1);
-
 namespace Prooph\EventStore\Pdo;
 
 interface MariaDBIndexedPersistenceStrategy
@@ -24,5 +22,5 @@ interface MariaDBIndexedPersistenceStrategy
      *          '_aggregate_version' => 'aggregate_version',
      *      ]
      */
-    public function indexedMetadataFields(): array;
+    public function indexedMetadataFields();
 }

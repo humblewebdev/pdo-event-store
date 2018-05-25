@@ -7,9 +7,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
-declare(strict_types=1);
-
 namespace Prooph\EventStore\Pdo;
 
 use DateTimeImmutable;
@@ -75,13 +72,22 @@ final class PdoStreamIterator implements Iterator
      */
     private $forward;
 
+    /**
+     * PdoStreamIterator constructor.
+     * @param PDOStatement $statement
+     * @param MessageFactory $messageFactory
+     * @param int $batchSize
+     * @param int $fromNumber
+     * @param int|null $count
+     * @param bool $forward
+     */
     public function __construct(
         PDOStatement $statement,
         MessageFactory $messageFactory,
-        int $batchSize,
-        int $fromNumber,
-        ?int $count,
-        bool $forward
+        $batchSize,
+        $fromNumber,
+        $count,
+        $forward
     ) {
         $this->statement = $statement;
         $this->messageFactory = $messageFactory;
@@ -97,7 +103,7 @@ final class PdoStreamIterator implements Iterator
     /**
      * @return null|Message
      */
-    public function current(): ?Message
+    public function current()
     {
         if (false === $this->currentItem) {
             return null;
@@ -138,7 +144,7 @@ final class PdoStreamIterator implements Iterator
         ]);
     }
 
-    public function next(): void
+    public function next()
     {
         if ($this->count && ($this->count - 1) === $this->currentKey) {
             $this->currentKey = -1;
@@ -198,12 +204,12 @@ final class PdoStreamIterator implements Iterator
     /**
      * @return bool
      */
-    public function valid(): bool
+    public function valid()
     {
         return false !== $this->currentItem;
     }
 
-    public function rewind(): void
+    public function rewind()
     {
         //Only perform rewind if current item is not the first element
         if ($this->currentKey !== 0) {
@@ -228,7 +234,11 @@ final class PdoStreamIterator implements Iterator
         }
     }
 
-    private function buildStatement(int $fromNumber): PDOStatement
+    /**
+     * @param int $fromNumber
+     * @return PDOStatement
+     */
+    private function buildStatement($fromNumber)
     {
         if (null === $this->count
             || $this->count < ($this->batchSize * ($this->batchPosition + 1))
