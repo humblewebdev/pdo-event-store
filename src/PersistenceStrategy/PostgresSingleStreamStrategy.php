@@ -22,7 +22,7 @@ final class PostgresSingleStreamStrategy implements PersistenceStrategy
      * @param string $tableName
      * @return string[]
      */
-    public function createSchema(string $tableName): array
+    public function createSchema($tableName)
     {
         $statement = <<<EOT
 CREATE TABLE "$tableName" (
@@ -57,7 +57,10 @@ EOT;
         ];
     }
 
-    public function columnNames(): array
+    /**
+     * @return array
+     */
+    public function columnNames()
     {
         return [
             'event_id',

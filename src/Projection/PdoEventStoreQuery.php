@@ -7,9 +7,6 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
-declare(strict_types=1);
-
 namespace Prooph\EventStore\Pdo\Projection;
 
 use Closure;
@@ -92,7 +89,18 @@ final class PdoEventStoreQuery implements Query
      */
     private $triggerPcntlSignalDispatch;
 
-    public function __construct(EventStore $eventStore, PDO $connection, string $eventStreamsTable, bool $triggerPcntlSignalDispatch = false)
+    /**
+     * PdoEventStoreQuery constructor.
+     * @param EventStore $eventStore
+     * @param PDO $connection
+     * @param string $eventStreamsTable
+     * @param bool $triggerPcntlSignalDispatch
+     */
+    public function __construct(
+        EventStore $eventStore,
+        PDO $connection,
+        $eventStreamsTable,
+        $triggerPcntlSignalDispatch = false)
     {
         $this->eventStore = $eventStore;
         $this->connection = $connection;
@@ -109,7 +117,11 @@ final class PdoEventStoreQuery implements Query
         }
     }
 
-    public function init(Closure $callback): Query
+    /**
+     * @param Closure $callback
+     * @return Query
+     */
+    public function init(Closure $callback)
     {
         if (null !== $this->initCallback) {
             throw new Exception\RuntimeException('Projection already initialized');
@@ -128,7 +140,11 @@ final class PdoEventStoreQuery implements Query
         return $this;
     }
 
-    public function fromStream(string $streamName): Query
+    /**
+     * @param string $streamName
+     * @return Query
+     */
+    public function fromStream($streamName)
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -139,7 +155,11 @@ final class PdoEventStoreQuery implements Query
         return $this;
     }
 
-    public function fromStreams(string ...$streamNames): Query
+    /**
+     * @param \string[] ...$streamNames
+     * @return Query
+     */
+    public function fromStreams($streamNames)
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -152,7 +172,11 @@ final class PdoEventStoreQuery implements Query
         return $this;
     }
 
-    public function fromCategory(string $name): Query
+    /**
+     * @param string $name
+     * @return Query
+     */
+    public function fromCategory($name)
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -163,7 +187,11 @@ final class PdoEventStoreQuery implements Query
         return $this;
     }
 
-    public function fromCategories(string ...$names): Query
+    /**
+     * @param \string[] ...$names
+     * @return Query
+     */
+    public function fromCategories($names)
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -176,7 +204,10 @@ final class PdoEventStoreQuery implements Query
         return $this;
     }
 
-    public function fromAll(): Query
+    /**
+     * @return Query
+     */
+    public function fromAll()
     {
         if (null !== $this->query) {
             throw new Exception\RuntimeException('From was already called');
@@ -187,7 +218,11 @@ final class PdoEventStoreQuery implements Query
         return $this;
     }
 
-    public function when(array $handlers): Query
+    /**
+     * @param array $handlers
+     * @return Query
+     */
+    public function when(array $handlers)
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
             throw new Exception\RuntimeException('When was already called');
@@ -208,7 +243,11 @@ final class PdoEventStoreQuery implements Query
         return $this;
     }
 
-    public function whenAny(Closure $handler): Query
+    /**
+     * @param Closure $handler
+     * @return Query
+     */
+    public function whenAny(Closure $handler)
     {
         if (null !== $this->handler || ! empty($this->handlers)) {
             throw new Exception\RuntimeException('When was already called');
@@ -219,7 +258,7 @@ final class PdoEventStoreQuery implements Query
         return $this;
     }
 
-    public function reset(): void
+    public function reset()
     {
         $this->streamPositions = [];
 
@@ -238,17 +277,20 @@ final class PdoEventStoreQuery implements Query
         $this->state = [];
     }
 
-    public function stop(): void
+    public function stop()
     {
         $this->isStopped = true;
     }
 
-    public function getState(): array
+    /**
+     * @return array
+     */
+    public function getState()
     {
         return $this->state;
     }
 
-    public function run(): void
+    public function run()
     {
         if (null === $this->query
             || (null === $this->handler && empty($this->handlers))
@@ -284,7 +326,11 @@ final class PdoEventStoreQuery implements Query
         }
     }
 
-    private function handleStreamWithSingleHandler(string $streamName, Iterator $events): void
+    /**
+     * @param string $streamName
+     * @param Iterator $events
+     */
+    private function handleStreamWithSingleHandler($streamName, Iterator $events)
     {
         $this->currentStreamName = $streamName;
         $handler = $this->handler;
@@ -308,7 +354,11 @@ final class PdoEventStoreQuery implements Query
         }
     }
 
-    private function handleStreamWithHandlers(string $streamName, Iterator $events): void
+    /**
+     * @param string $streamName
+     * @param Iterator $events
+     */
+    private function handleStreamWithHandlers($streamName, Iterator $events)
     {
         $this->currentStreamName = $streamName;
 
@@ -336,7 +386,11 @@ final class PdoEventStoreQuery implements Query
         }
     }
 
-    private function createHandlerContext(?string &$streamName)
+    /**
+     * @param null|string $streamName
+     * @return mixed
+     */
+    private function createHandlerContext( &$streamName)
     {
         return new class($this, $streamName) {
             /**
@@ -367,7 +421,7 @@ final class PdoEventStoreQuery implements Query
         };
     }
 
-    private function prepareStreamPositions(): void
+    private function prepareStreamPositions()
     {
         $streamPositions = [];
 
@@ -432,7 +486,11 @@ EOT;
         $this->streamPositions = array_merge($streamPositions, $this->streamPositions);
     }
 
-    private function quoteTableName(string $tableName): string
+    /**
+     * @param string $tableName
+     * @return string
+     */
+    private function quoteTableName($tableName)
     {
         switch ($this->vendor) {
             case 'pgsql':

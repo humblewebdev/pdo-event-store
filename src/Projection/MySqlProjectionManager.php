@@ -7,11 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
-declare(strict_types=1);
-
 namespace Prooph\EventStore\Pdo\Projection;
 
+use OutOfRangeException;
 use PDO;
 use PDOException;
 use Prooph\EventStore\EventStore;
@@ -49,11 +47,19 @@ final class MySqlProjectionManager implements ProjectionManager
      */
     private $projectionsTable;
 
+    /**
+     * MySqlProjectionManager constructor.
+     * @param EventStore $eventStore
+     * @param PDO $connection
+     * @param string $eventStreamsTable
+     * @param string $projectionsTable
+     * @throws \Prooph\EventStore\Pdo\Exception\InvalidArgumentException
+     */
     public function __construct(
         EventStore $eventStore,
         PDO $connection,
-        string $eventStreamsTable = 'event_streams',
-        string $projectionsTable = 'projections'
+        $eventStreamsTable = 'event_streams',
+        $projectionsTable = 'projections'
     ) {
         $this->eventStore = $eventStore;
         $this->connection = $connection;
@@ -69,7 +75,11 @@ final class MySqlProjectionManager implements ProjectionManager
         }
     }
 
-    public function createQuery(array $options = []): Query
+    /**
+     * @param array $options
+     * @return PdoEventStoreQuery
+     */
+    public function createQuery(array $options = [])
     {
         return new PdoEventStoreQuery(
             $this->eventStore,
@@ -79,10 +89,15 @@ final class MySqlProjectionManager implements ProjectionManager
         );
     }
 
+    /**
+     * @param string $name
+     * @param array $options
+     * @return PdoEventStoreProjector
+     */
     public function createProjection(
-        string $name,
+        $name,
         array $options = []
-    ): Projector {
+    ) {
         return new PdoEventStoreProjector(
             $this->eventStore,
             $this->connection,
@@ -98,11 +113,17 @@ final class MySqlProjectionManager implements ProjectionManager
         );
     }
 
+    /**
+     * @param string $name
+     * @param ReadModel $readModel
+     * @param array $options
+     * @return PdoEventStoreReadModelProjector
+     */
     public function createReadModelProjection(
-        string $name,
+        $name,
         ReadModel $readModel,
         array $options = []
-    ): ReadModelProjector {
+    ) {
         return new PdoEventStoreReadModelProjector(
             $this->eventStore,
             $this->connection,
@@ -118,7 +139,11 @@ final class MySqlProjectionManager implements ProjectionManager
         );
     }
 
-    public function deleteProjection(string $name, bool $deleteEmittedEvents): void
+    /**
+     * @param string $name
+     * @param bool $deleteEmittedEvents
+     */
+    public function deleteProjection($name, $deleteEmittedEvents)
     {
         $sql = <<<EOT
 UPDATE `$this->projectionsTable` SET status = ? WHERE name = ? LIMIT 1;
@@ -165,7 +190,10 @@ EOT;
         }
     }
 
-    public function resetProjection(string $name): void
+    /**
+     * @param string $name
+     */
+    public function resetProjection($name)
     {
         $sql = <<<EOT
 UPDATE `$this->projectionsTable` SET status = ? WHERE name = ? LIMIT 1;
@@ -206,7 +234,10 @@ EOT;
         }
     }
 
-    public function stopProjection(string $name): void
+    /**
+     * @param string $name
+     */
+    public function stopProjection($name)
     {
         $sql = <<<EOT
 UPDATE `$this->projectionsTable` SET status = ? WHERE name = ? LIMIT 1;
@@ -247,7 +278,13 @@ EOT;
         }
     }
 
-    public function fetchProjectionNames(?string $filter, int $limit = 20, int $offset = 0): array
+    /**
+     * @param null|string $filter
+     * @param int $limit
+     * @param int $offset
+     * @return array
+     */
+    public function fetchProjectionNames($filter,$limit = 20,$offset = 0)
     {
         if (1 > $limit) {
             throw new OutOfRangeException(
@@ -305,7 +342,13 @@ SQL;
         return $projectionNames;
     }
 
-    public function fetchProjectionNamesRegex(string $filter, int $limit = 20, int $offset = 0): array
+    /**
+     * @param string $filter
+     * @param int $limit
+     * @param int $offset
+     * @return array
+     */
+    public function fetchProjectionNamesRegex($filter,$limit = 20,$offset = 0)
     {
         if (1 > $limit) {
             throw new OutOfRangeException(
@@ -364,7 +407,11 @@ SQL;
         return $projectionNames;
     }
 
-    public function fetchProjectionStatus(string $name): ProjectionStatus
+    /**
+     * @param string $name
+     * @return ProjectionStatus
+     */
+    public function fetchProjectionStatus($name)
     {
         $query = <<<SQL
 SELECT `status` FROM `$this->projectionsTable`
@@ -393,7 +440,11 @@ SQL;
         return ProjectionStatus::byValue($result->status);
     }
 
-    public function fetchProjectionStreamPositions(string $name): array
+    /**
+     * @param string $name
+     * @return array
+     */
+    public function fetchProjectionStreamPositions($name)
     {
         $query = <<<SQL
 SELECT `position` FROM `$this->projectionsTable`
@@ -422,7 +473,11 @@ SQL;
         return json_decode($result->position, true);
     }
 
-    public function fetchProjectionState(string $name): array
+    /**
+     * @param string $name
+     * @return array
+     */
+    public function fetchProjectionState($name)
     {
         $query = <<<SQL
 SELECT `state` FROM `$this->projectionsTable`
